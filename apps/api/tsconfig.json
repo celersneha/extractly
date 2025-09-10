@@ -1,14 +1,18 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ESNext", // ESM output
-    "moduleResolution": "node", // ✅ Still fine for TS < 7
+    "module": "CommonJS",
+    "moduleResolution": "node",
     "strict": true,
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
+    "resolveJsonModule": true,
     "outDir": "dist",
-    "ignoreDeprecations": "6.0" // 🔕 Silences node10 warning
+    "rootDir": "src",
+    "ignoreDeprecations": "6.0"
   },
-  "include": ["src"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
