@@ -21,6 +21,11 @@ import invoiceRoutes from "./routes/invoice.routes";
 //routes declaration
 app.use("/api/v1", invoiceRoutes);
 
+// Add a simple health check or welcome route
+app.get("/", (req, res) => {
+  res.json({ message: "API deployed successfully!" });
+});
+
 // Global error handler
 app.use((err: any, req: any, res: any, next: any) => {
   const statusCode = err.statusCode || 500;

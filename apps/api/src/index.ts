@@ -1,12 +1,15 @@
-import dotenv from "dotenv";
-import path from "path";
-dotenv.config({
-  path: path.resolve(__dirname, "../.env.local"),
-});
+if (process.env.VERCEL !== "1") {
+  import("dotenv").then((dotenv) => {
+    dotenv.config({
+      path: path.resolve(__dirname, "../.env.local"),
+    });
+  });
+}
 import app from "./app";
 import type { Request, Response } from "express";
 
 import connectDB from "./db/index";
+import path from "path";
 
 connectDB()
   .then(() => {
