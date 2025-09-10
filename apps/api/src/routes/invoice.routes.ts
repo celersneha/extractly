@@ -9,7 +9,7 @@ import {
   getInvoiceById,
   updateInvoice,
   deleteInvoice,
-} from "../controllers/invoice.controller";
+} from "../controllers/invoice.controller.js";
 
 const router = Router();
 

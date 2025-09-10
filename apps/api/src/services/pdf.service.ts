@@ -1,5 +1,5 @@
 import { put } from "@vercel/blob";
-import { ApiError } from "../utils/ApiError";
+import { ApiError } from "../utils/ApiError.js";
 import fetch from "node-fetch";
 
 export interface UploadResult {

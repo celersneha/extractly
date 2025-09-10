@@ -3,10 +3,10 @@ import path from "path";
 dotenv.config({
   path: path.resolve(__dirname, "../.env.local"),
 });
-import app from "./app";
+import app from "./app.js";
 import type { Request, Response } from "express";
 
-import connectDB from "./db/index";
+import connectDB from "./db/index.js";
 
 connectDB()
   .then(() => {
