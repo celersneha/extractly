@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext", // ESM output
+    "moduleResolution": "node", // ✅ Still fine for TS < 7
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "outDir": "dist",
+    "ignoreDeprecations": "6.0" // 🔕 Silences node10 warning
+  },
+  "include": ["src"]
+}
