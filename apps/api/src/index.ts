@@ -1,11 +1,13 @@
 import dotenv from "dotenv";
-import { app } from "./app.js";
+import path from "path";
+dotenv.config({
+  path: path.resolve(__dirname, "../.env.local"),
+});
+import app from "./app";
 import type { Request, Response } from "express";
 
-dotenv.config({
-  path: "./.env.local",
-});
-import connectDB from "./db/index.js";
+import connectDB from "./db/index";
+
 connectDB()
   .then(() => {
     app.get("/", (req: Request, res: Response) => {
