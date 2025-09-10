@@ -1,11 +1,11 @@
 import type { Request, Response } from "express";
-import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
-import { ApiError } from "../utils/ApiError.js";
-import { Invoice } from "../models/invoice.model.js";
-import { pdfService } from "../services/pdf.service.js";
-import { fetchPDFBufferFromBlob } from "../services/pdf.service.js";
-import { extractInvoiceDataWithGemini } from "../services/ai.service.js";
+import { asyncHandler } from "../utils/asyncHandler";
+import { ApiResponse } from "../utils/ApiResponse";
+import { ApiError } from "../utils/ApiError";
+import { Invoice } from "../models/invoice.model";
+import { pdfService } from "../services/pdf.service";
+import { fetchPDFBufferFromBlob } from "../services/pdf.service";
+import { extractInvoiceDataWithGemini } from "../services/ai.service";
 
 export const uploadPDF = asyncHandler(async (req: Request, res: Response) => {
   const file = req.file;
