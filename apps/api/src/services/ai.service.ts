@@ -47,8 +47,6 @@ export async function extractInvoiceDataWithGemini(
   const response = await result.response;
   const text = response.text();
 
-  console.log("Gemini response text:", text);
-
   // Extract JSON block from Gemini response
   const match = text.match(/```json([\s\S]*?)```|({[\s\S]*})/);
   let jsonString = "";
