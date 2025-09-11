@@ -2,11 +2,26 @@ import express from "express";
 import cors from "cors";
 
 const app = express();
-console.log("CORS_ORIGIN:", process.env.CORS_ORIGIN);
+
+// Log environment variables (remove in production)
+console.log("Environment check:", {
+  NODE_ENV: process.env.NODE_ENV,
+  hasDBUrl: !!process.env.DATABASE_URL,
+  hasOtherEnvs: Object.keys(process.env).filter((key) =>
+    key.startsWith("YOUR_APP_PREFIX")
+  ).length,
+});
+
+// Configure CORS properly
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "*",
+    origin: [
+      "https://extractly-psi.vercel.app",
+      "http://localhost:3000", // for local development
+    ],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
