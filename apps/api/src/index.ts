@@ -28,9 +28,6 @@ const startServer = async () => {
   }
 };
 
-// Start server for local development
-if (require.main === module) {
-  startServer();
-}
+startServer();
 
 export default app;

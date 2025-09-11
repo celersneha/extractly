@@ -40,35 +40,7 @@ app.use("/api/v1", invoiceRoutes);
 
 // Add a health check that tests DB connection
 app.get("/", async (req, res) => {
-  try {
-    // Check if environment variables are available
-    const dbUrl = process.env.DATABASE_URL || process.env.MONGODB_URI;
-
-    if (!dbUrl) {
-      return res.status(500).json({
-        message: "API deployed but DATABASE_URL is missing",
-        env: {
-          NODE_ENV: process.env.NODE_ENV,
-          hasDBUrl: !!process.env.DATABASE_URL,
-          hasMongoDB: !!process.env.MONGODB_URI,
-        },
-      });
-    }
-
-    // Try to connect to database
-    await connectDB();
-
-    res.json({
-      message: "API deployed successfully!",
-      database: "Connected",
-      env: "Variables loaded",
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "API deployed but database connection failed",
-      error: error instanceof Error ? error.message : "Unknown error",
-    });
-  }
+  res.json({ message: "API is running" });
 });
 
 // Global error handler
