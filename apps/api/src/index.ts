@@ -1,27 +1,36 @@
 import path from "path";
 import dotenv from "dotenv";
-// Local dev mein dotenv config karo
-if (process.env.VERCEL !== "1") {
+
+// Load environment variables from .env.local for development
+if (process.env.NODE_ENV !== "production") {
   dotenv.config({
     path: path.resolve(__dirname, "../.env.local"),
   });
 }
 
 import app from "./app";
-import type { Request, Response } from "express";
 import connectDB from "./db/index";
 
-connectDB()
-  .then(() => {
-    // Vercel pe listen mat karo
-    if (process.env.VERCEL !== "1") {
-      app.listen(process.env.PORT || 8000, () => {
-        console.log(`Server is running on port ${process.env.PORT}`);
+const startServer = async () => {
+  try {
+    await connectDB();
+
+    // Only start server locally, not on Vercel
+    if (process.env.NODE_ENV === "development") {
+      const port = process.env.PORT || 8000;
+      app.listen(port, () => {
+        console.log(`Server running on port ${port}`);
       });
     }
-  })
-  .catch((err) => {
-    console.log("MONGO DB connection failed! ", err);
-  });
+  } catch (err) {
+    console.error("Failed to start server:", err);
+    process.exit(1);
+  }
+};
+
+// Start server for local development
+if (require.main === module) {
+  startServer();
+}
 
 export default app;
