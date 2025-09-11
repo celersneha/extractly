@@ -7,8 +7,15 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Upload, Plus } from "lucide-react";
 import Link from "next/link";
+import {
+  usePageBreadcrumbs,
+  BREADCRUMB_CONFIGS,
+} from "@/hooks/use-page-breadcrumbs";
 
 export function InvoiceListView() {
+  // Set breadcrumbs for documents/invoice list page
+  usePageBreadcrumbs(BREADCRUMB_CONFIGS.documents);
+
   const { invoices, loading, error, pagination, refetch } = useInvoices();
 
   const handleSearch = (query: string) => {
@@ -28,17 +35,19 @@ export function InvoiceListView() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Invoices</h1>
-          <p className="text-muted-foreground">Manage all your PDF invoices</p>
+          <h1 className="text-2xl font-bold tracking-tight">Invoices</h1>
+          <p className="text-sm text-muted-foreground">
+            Manage all your PDF invoices
+          </p>
         </div>
         <div className="flex gap-2">
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" size="sm">
             <Link href="/invoices/upload">
-              <Upload className="mr-2 h-4 w-4" />
+              <Upload className="mr-1 h-3 w-3" />
               Upload PDF
             </Link>
           </Button>
