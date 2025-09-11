@@ -62,23 +62,23 @@ export function InvoiceList({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Search */}
       {onSearch && !compact && (
         <Card>
-          <CardHeader>
-            <CardTitle>Search Invoices</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Search Invoices</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-2">
             <form onSubmit={handleSearch} className="flex gap-2">
               <Input
                 placeholder="Search by vendor name or invoice number..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1"
+                className="flex-1 text-xs h-8"
               />
-              <Button type="submit" size="sm">
-                <Search className="h-4 w-4" />
+              <Button type="submit" size="sm" className="h-8 px-3">
+                <Search className="h-3 w-3" />
               </Button>
             </form>
           </CardContent>
@@ -88,62 +88,70 @@ export function InvoiceList({
       {/* Invoices Table */}
       <Card>
         {!compact && (
-          <CardHeader>
-            <CardTitle>Invoices</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Invoices</CardTitle>
           </CardHeader>
         )}
-        <CardContent className={compact ? "pt-6" : ""}>
+        <CardContent className={compact ? "pt-4" : "pt-2"}>
           {loading ? (
-            <div className="space-y-2">
+            <div className="space-y-1">
               {[...Array(5)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-16 w-full bg-muted animate-pulse rounded"
+                  className="h-12 w-full bg-muted animate-pulse rounded"
                 />
               ))}
             </div>
           ) : invoices.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>No invoices found</p>
+            <div className="text-center py-6 text-muted-foreground">
+              <p className="text-sm">No invoices found</p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Invoice #</TableHead>
-                  <TableHead>Vendor</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Amount</TableHead>
-                  {!compact && <TableHead>Status</TableHead>}
-                  {!compact && <TableHead>Created</TableHead>}
-                  <TableHead>Actions</TableHead>
+                  <TableHead className="text-xs">Invoice #</TableHead>
+                  <TableHead className="text-xs">Vendor</TableHead>
+                  <TableHead className="text-xs">Date</TableHead>
+                  <TableHead className="text-xs">Amount</TableHead>
+                  {!compact && (
+                    <TableHead className="text-xs">Status</TableHead>
+                  )}
+                  {!compact && (
+                    <TableHead className="text-xs">Created</TableHead>
+                  )}
+                  <TableHead className="text-xs">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {invoices.map((invoice) => (
                   <TableRow key={invoice._id}>
-                    <TableCell className="font-medium">
+                    <TableCell className="font-medium text-xs">
                       {invoice.invoice.number}
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{invoice.vendor.name}</div>
+                        <div className="font-medium text-xs">
+                          {invoice.vendor.name}
+                        </div>
                         {!compact && invoice.vendor.address && (
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-xs text-muted-foreground">
                             {invoice.vendor.address}
                           </div>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>{invoice.invoice.date}</TableCell>
-                    <TableCell>
+                    <TableCell className="text-xs">
+                      {invoice.invoice.date}
+                    </TableCell>
+                    <TableCell className="text-xs">
                       {invoice.invoice.currency}{" "}
                       {invoice.invoice.total.toFixed(2)}
                     </TableCell>
                     {!compact && (
                       <TableCell>
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                             invoice.invoice.poNumber
                               ? "bg-green-100 text-green-800"
                               : "bg-gray-100 text-gray-800"
@@ -154,30 +162,31 @@ export function InvoiceList({
                       </TableCell>
                     )}
                     {!compact && (
-                      <TableCell className="text-sm text-muted-foreground">
+                      <TableCell className="text-xs text-muted-foreground">
                         {new Date(invoice.createdAt).toLocaleDateString()}
                       </TableCell>
                     )}
                     <TableCell>
                       <div className="flex gap-1">
-                        <Button asChild variant="ghost" size="sm">
+                        <Button
+                          asChild
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                        >
                           <Link href={`/invoices/${invoice._id}`}>
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-3 w-3" />
                           </Link>
                         </Button>
-                        <Button asChild variant="ghost" size="sm">
-                          <Link href={`/invoices/${invoice._id}/edit`}>
-                            <Edit className="h-4 w-4" />
-                          </Link>
-                        </Button>
+
                         {onDelete && (
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => onDelete(invoice._id)}
-                            className="text-red-600 hover:text-red-700"
+                            className="h-7 w-7 p-0 text-red-600 hover:text-red-700"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-3 w-3" />
                           </Button>
                         )}
                       </div>
