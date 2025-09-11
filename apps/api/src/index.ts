@@ -13,10 +13,6 @@ import connectDB from "./db/index";
 
 connectDB()
   .then(() => {
-    app.get("/", (req: Request, res: Response) => {
-      res.send("Hello World");
-    });
-
     // Vercel pe listen mat karo
     if (process.env.VERCEL !== "1") {
       app.listen(process.env.PORT || 8000, () => {
