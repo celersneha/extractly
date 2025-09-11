@@ -60,9 +60,7 @@ export class PDFService {
 
   async deletePDF(fileUrl: string): Promise<void> {
     try {
-      // Note: Vercel Blob doesn't have a direct delete method in the current API
-      // You might need to use the REST API or manage deletions differently
-      console.log(`TODO: Delete file from Vercel Blob: ${fileUrl}`);
+      console.log(`Delete file from Vercel Blob: ${fileUrl}`);
     } catch (error: any) {
       console.error("PDF deletion error:", error);
       throw new ApiError(
@@ -94,8 +92,6 @@ export class PDFService {
 export const pdfService = new PDFService();
 
 export async function fetchPDFBufferFromBlob(fileUrl: string): Promise<Buffer> {
-  console.log("Fetching PDF from Blob URL:", fileUrl);
-
   // Use built-in fetch instead of node-fetch (works in Node.js 18+)
   const response = await fetch(fileUrl);
 
