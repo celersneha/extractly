@@ -1,15 +1,17 @@
 import express from "express";
 import cors from "cors";
+import connectDB from "./db/index";
 
 const app = express();
 
-// Log environment variables (remove in production)
+// Log environment variables (for debugging - remove in production)
 console.log("Environment check:", {
   NODE_ENV: process.env.NODE_ENV,
-  hasDBUrl: !!process.env.DATABASE_URL,
-  hasOtherEnvs: Object.keys(process.env).filter((key) =>
-    key.startsWith("YOUR_APP_PREFIX")
-  ).length,
+  hasMongoDB: !!process.env.MONGODB_URI,
+  allEnvKeys: Object.keys(process.env).filter(
+    (key) =>
+      key.includes("DB") || key.includes("MONGO") || key.includes("DATABASE")
+  ),
 });
 
 // Configure CORS properly
@@ -36,13 +38,42 @@ import invoiceRoutes from "./routes/invoice.routes";
 //routes declaration
 app.use("/api/v1", invoiceRoutes);
 
-// Add a simple health check or welcome route
-app.get("/", (req, res) => {
-  res.json({ message: "API deployed successfully!" });
+// Add a health check that tests DB connection
+app.get("/", async (req, res) => {
+  try {
+    // Check if environment variables are available
+    const dbUrl = process.env.DATABASE_URL || process.env.MONGODB_URI;
+
+    if (!dbUrl) {
+      return res.status(500).json({
+        message: "API deployed but DATABASE_URL is missing",
+        env: {
+          NODE_ENV: process.env.NODE_ENV,
+          hasDBUrl: !!process.env.DATABASE_URL,
+          hasMongoDB: !!process.env.MONGODB_URI,
+        },
+      });
+    }
+
+    // Try to connect to database
+    await connectDB();
+
+    res.json({
+      message: "API deployed successfully!",
+      database: "Connected",
+      env: "Variables loaded",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "API deployed but database connection failed",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 });
 
 // Global error handler
 app.use((err: any, req: any, res: any, next: any) => {
+  console.error("Global error:", err);
   const statusCode = err.statusCode || 500;
   const message = err.message || "Internal Server Error";
 
