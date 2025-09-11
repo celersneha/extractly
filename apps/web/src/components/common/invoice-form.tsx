@@ -169,21 +169,23 @@ export function InvoiceForm({
   };
 
   return (
-    <div className={`space-y-6 ${className}`}>
-      <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+    <div className={`space-y-4 ${className}`}>
+      <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
         {/* Header with Extract Button */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Invoice Details</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm">Invoice Details</CardTitle>
             {onExtract && (
               <Button
                 type="button"
                 onClick={onExtract}
                 disabled={isExtracting || !initialData?.fileId}
                 variant="outline"
+                size="sm"
+                className="h-7 text-xs"
               >
                 {isExtracting ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-1 h-3 w-3 animate-spin" />
                 ) : (
                   "Extract with AI"
                 )}
@@ -194,12 +196,14 @@ export function InvoiceForm({
 
         {/* Vendor Information */}
         <Card>
-          <CardHeader>
-            <CardTitle>Vendor Information</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Vendor Information</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 pt-2">
             <div>
-              <Label htmlFor="vendor.name">Vendor Name *</Label>
+              <Label htmlFor="vendor.name" className="text-xs">
+                Vendor Name *
+              </Label>
               <Input
                 id="vendor.name"
                 {...register("vendor.name", {
@@ -210,17 +214,21 @@ export function InvoiceForm({
                   },
                 })}
                 placeholder="Enter vendor name"
-                className={errors.vendor?.name ? "border-red-500" : ""}
+                className={`text-xs h-7 ${
+                  errors.vendor?.name ? "border-red-500" : ""
+                }`}
               />
               {errors.vendor?.name && (
-                <p className="text-sm text-red-600 mt-1">
+                <p className="text-xs text-red-600 mt-1">
                   {errors.vendor.name.message}
                 </p>
               )}
             </div>
 
             <div>
-              <Label htmlFor="vendor.address">Address</Label>
+              <Label htmlFor="vendor.address" className="text-xs">
+                Address
+              </Label>
               <Textarea
                 id="vendor.address"
                 {...register("vendor.address", {
@@ -230,18 +238,22 @@ export function InvoiceForm({
                   },
                 })}
                 placeholder="Enter vendor address"
-                rows={3}
-                className={errors.vendor?.address ? "border-red-500" : ""}
+                rows={2}
+                className={`text-xs ${
+                  errors.vendor?.address ? "border-red-500" : ""
+                }`}
               />
               {errors.vendor?.address && (
-                <p className="text-sm text-red-600 mt-1">
+                <p className="text-xs text-red-600 mt-1">
                   {errors.vendor.address.message}
                 </p>
               )}
             </div>
 
             <div>
-              <Label htmlFor="vendor.taxId">Tax ID</Label>
+              <Label htmlFor="vendor.taxId" className="text-xs">
+                Tax ID
+              </Label>
               <Input
                 id="vendor.taxId"
                 {...register("vendor.taxId", {
