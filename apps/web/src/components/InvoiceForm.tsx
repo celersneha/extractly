@@ -32,69 +32,13 @@ export function InvoiceForm({
   isExtracting = false,
   className = "",
 }: InvoiceFormProps) {
-  const defaultInvoiceData: CreateInvoiceData = {
-    fileId: "",
-    fileName: "",
-    vendor: {
-      name: "",
-      address: "",
-      taxId: "",
-    },
-    invoice: {
-      number: "",
-      date: "",
-      currency: "",
-      subtotal: 0,
-      taxPercent: 0,
-      total: 0,
-      poNumber: "",
-      poDate: "",
-      lineItems: [{ description: "", unitPrice: 0, quantity: 1, total: 0 }],
-    },
-  };
-
-  const [formState, setFormState] = useState<CreateInvoiceData>({
-    ...defaultInvoiceData,
-    ...initialData,
-    vendor: {
-      ...defaultInvoiceData.vendor,
-      ...(initialData?.vendor || {}),
-    },
-    invoice: {
-      ...defaultInvoiceData.invoice,
-      ...(initialData?.invoice || {}),
-      lineItems:
-        initialData?.invoice?.lineItems ?? defaultInvoiceData.invoice.lineItems,
-    },
-  });
-
-  useEffect(() => {
-    if (initialData) {
-      setFormState({
-        ...defaultInvoiceData,
-        ...initialData,
-        vendor: {
-          ...defaultInvoiceData.vendor,
-          ...(initialData.vendor || {}),
-        },
-        invoice: {
-          ...defaultInvoiceData.invoice,
-          ...(initialData.invoice || {}),
-          lineItems:
-            initialData.invoice?.lineItems ??
-            defaultInvoiceData.invoice.lineItems,
-        },
-      });
-    }
-  }, [initialData]);
-
   const {
     register,
     control,
     handleSubmit,
     watch,
     setValue,
-    reset, // Add reset function
+    reset,
     formState: { errors },
   } = useForm<CreateInvoiceData>({
     defaultValues: {
@@ -104,7 +48,7 @@ export function InvoiceForm({
       invoice: {
         number: "",
         date: "",
-        currency: "",
+        currency: "USD",
         subtotal: 0,
         taxPercent: 0,
         total: 0,
@@ -113,17 +57,22 @@ export function InvoiceForm({
         lineItems: [{ description: "", unitPrice: 0, quantity: 1, total: 0 }],
       },
     },
+    mode: "onChange",
   });
 
-  const { fields, append, remove, replace } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control,
     name: "invoice.lineItems",
   });
 
+  // Watch all the values that affect calculations
+  const watchedValues = watch();
+  const lineItems = watch("invoice.lineItems") || [];
+  const taxPercent = watch("invoice.taxPercent") || 0;
+
   // Auto-fill form when initialData changes (after extraction)
   useEffect(() => {
     if (initialData) {
-      // Reset entire form with new data
       reset({
         fileId: initialData.fileId || "",
         fileName: initialData.fileName || "",
@@ -135,42 +84,54 @@ export function InvoiceForm({
         invoice: {
           number: initialData.invoice?.number || "",
           date: initialData.invoice?.date || "",
-          currency: initialData.invoice?.currency || "",
+          currency: initialData.invoice?.currency || "USD",
           subtotal: initialData.invoice?.subtotal || 0,
           taxPercent: initialData.invoice?.taxPercent || 0,
           total: initialData.invoice?.total || 0,
           poNumber: initialData.invoice?.poNumber || "",
           poDate: initialData.invoice?.poDate || "",
-          lineItems: initialData.invoice?.lineItems || [
-            { description: "", unitPrice: 0, quantity: 1, total: 0 },
-          ],
+          lineItems:
+            Array.isArray(initialData.invoice?.lineItems) &&
+            initialData.invoice.lineItems.length > 0
+              ? initialData.invoice.lineItems
+              : [{ description: "", unitPrice: 0, quantity: 1, total: 0 }],
         },
       });
     }
   }, [initialData, reset]);
 
-  const lineItems = watch("invoice.lineItems");
+  // Calculate totals automatically - FIXED VERSION
+  useEffect(() => {
+    let subtotal = 0;
 
-  // Calculate totals automatically
-  React.useEffect(() => {
-    if (lineItems) {
-      const subtotal = lineItems.reduce((sum, item) => {
-        const itemTotal = item.unitPrice * item.quantity;
+    // Calculate subtotal from all line items
+    if (Array.isArray(lineItems)) {
+      lineItems.forEach((item, index) => {
+        const unitPrice = Number(item.unitPrice) || 0;
+        const quantity = Number(item.quantity) || 0;
+        const itemTotal = unitPrice * quantity;
+
         // Update individual line item total
-        const index = lineItems.indexOf(item);
-        if (itemTotal !== item.total) {
-          setValue(`invoice.lineItems.${index}.total`, itemTotal);
-        }
-        return sum + itemTotal;
-      }, 0);
+        setValue(
+          `invoice.lineItems.${index}.total`,
+          Number(itemTotal.toFixed(2))
+        );
 
-      const taxPercent = watch("invoice.taxPercent") || 0;
-      const total = subtotal + (subtotal * taxPercent) / 100;
-
-      setValue("invoice.subtotal", subtotal);
-      setValue("invoice.total", total);
+        subtotal += itemTotal;
+      });
     }
-  }, [lineItems, watch("invoice.taxPercent"), setValue]);
+
+    // Calculate tax and total
+    const taxAmount = (subtotal * (Number(taxPercent) || 0)) / 100;
+    const total = subtotal + taxAmount;
+
+    // Update form values with proper rounding
+    setValue("invoice.subtotal", Number(subtotal.toFixed(2)));
+    setValue("invoice.total", Number(total.toFixed(2)));
+
+    // Force a re-render by triggering a state change
+    // This ensures the UI updates immediately
+  }, [lineItems, taxPercent, setValue, fields.length]); // Added fields.length to dependencies
 
   const addLineItem = () => {
     append({ description: "", unitPrice: 0, quantity: 1, total: 0 });
@@ -182,9 +143,34 @@ export function InvoiceForm({
     }
   };
 
+  // Custom submit handler with additional validation
+  const onFormSubmit = (data: CreateInvoiceData) => {
+    // Additional validation
+    if (!data?.invoice?.lineItems?.length) {
+      return;
+    }
+
+    // Ensure all calculations are up to date
+    let subtotal = 0;
+    data.invoice.lineItems.forEach((item) => {
+      const itemTotal = Number((item.unitPrice * item.quantity).toFixed(2));
+      item.total = itemTotal;
+      subtotal += itemTotal;
+    });
+
+    const taxPercent = Number(data.invoice.taxPercent) || 0;
+    const taxAmount = (subtotal * taxPercent) / 100;
+    const total = subtotal + taxAmount;
+
+    data.invoice.subtotal = Number(subtotal.toFixed(2));
+    data.invoice.total = Number(total.toFixed(2));
+
+    onSubmit(data);
+  };
+
   return (
     <div className={`space-y-6 ${className}`}>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
         {/* Header with Extract Button */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
@@ -218,8 +204,13 @@ export function InvoiceForm({
                 id="vendor.name"
                 {...register("vendor.name", {
                   required: "Vendor name is required",
+                  minLength: {
+                    value: 2,
+                    message: "Vendor name must be at least 2 characters",
+                  },
                 })}
                 placeholder="Enter vendor name"
+                className={errors.vendor?.name ? "border-red-500" : ""}
               />
               {errors.vendor?.name && (
                 <p className="text-sm text-red-600 mt-1">
@@ -232,19 +223,42 @@ export function InvoiceForm({
               <Label htmlFor="vendor.address">Address</Label>
               <Textarea
                 id="vendor.address"
-                {...register("vendor.address")}
+                {...register("vendor.address", {
+                  maxLength: {
+                    value: 500,
+                    message: "Address cannot exceed 500 characters",
+                  },
+                })}
                 placeholder="Enter vendor address"
                 rows={3}
+                className={errors.vendor?.address ? "border-red-500" : ""}
               />
+              {errors.vendor?.address && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.vendor.address.message}
+                </p>
+              )}
             </div>
 
             <div>
               <Label htmlFor="vendor.taxId">Tax ID</Label>
               <Input
                 id="vendor.taxId"
-                {...register("vendor.taxId")}
+                {...register("vendor.taxId", {
+                  pattern: {
+                    value: /^[A-Za-z0-9\-]*$/,
+                    message:
+                      "Tax ID can only contain letters, numbers, and hyphens",
+                  },
+                })}
                 placeholder="Enter tax ID"
+                className={errors.vendor?.taxId ? "border-red-500" : ""}
               />
+              {errors.vendor?.taxId && (
+                <p className="text-sm text-red-600 mt-1">
+                  {errors.vendor.taxId.message}
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -262,8 +276,13 @@ export function InvoiceForm({
                   id="invoice.number"
                   {...register("invoice.number", {
                     required: "Invoice number is required",
+                    minLength: {
+                      value: 1,
+                      message: "Invoice number cannot be empty",
+                    },
                   })}
                   placeholder="Enter invoice number"
+                  className={errors.invoice?.number ? "border-red-500" : ""}
                 />
                 {errors.invoice?.number && (
                   <p className="text-sm text-red-600 mt-1">
@@ -279,7 +298,22 @@ export function InvoiceForm({
                   type="date"
                   {...register("invoice.date", {
                     required: "Invoice date is required",
+                    validate: (value) => {
+                      const selectedDate = new Date(value);
+                      const today = new Date();
+                      const oneYearAgo = new Date();
+                      oneYearAgo.setFullYear(today.getFullYear() - 1);
+
+                      if (selectedDate > today) {
+                        return "Invoice date cannot be in the future";
+                      }
+                      if (selectedDate < oneYearAgo) {
+                        return "Invoice date cannot be more than 1 year ago";
+                      }
+                      return true;
+                    },
                   })}
+                  className={errors.invoice?.date ? "border-red-500" : ""}
                 />
                 {errors.invoice?.date && (
                   <p className="text-sm text-red-600 mt-1">
@@ -289,12 +323,27 @@ export function InvoiceForm({
               </div>
 
               <div>
-                <Label htmlFor="invoice.currency">Currency</Label>
+                <Label htmlFor="invoice.currency">Currency *</Label>
                 <Input
                   id="invoice.currency"
-                  {...register("invoice.currency")}
-                  placeholder="e.g., USD, EUR"
+                  {...register("invoice.currency", {
+                    required: "Currency is required",
+                    pattern: {
+                      value: /^[A-Z]{3}$/,
+                      message:
+                        "Currency must be a 3-letter code (e.g., USD, EUR)",
+                    },
+                  })}
+                  placeholder="e.g., USD, EUR, INR"
+                  className={errors.invoice?.currency ? "border-red-500" : ""}
+                  maxLength={3}
+                  style={{ textTransform: "uppercase" }}
                 />
+                {errors.invoice?.currency && (
+                  <p className="text-sm text-red-600 mt-1">
+                    {errors.invoice.currency.message}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -303,9 +352,27 @@ export function InvoiceForm({
                   id="invoice.taxPercent"
                   type="number"
                   step="0.01"
-                  {...register("invoice.taxPercent", { valueAsNumber: true })}
+                  min="0"
+                  max="100"
+                  {...register("invoice.taxPercent", {
+                    valueAsNumber: true,
+                    min: {
+                      value: 0,
+                      message: "Tax percentage cannot be negative",
+                    },
+                    max: {
+                      value: 100,
+                      message: "Tax percentage cannot exceed 100%",
+                    },
+                  })}
                   placeholder="0.00"
+                  className={errors.invoice?.taxPercent ? "border-red-500" : ""}
                 />
+                {errors.invoice?.taxPercent && (
+                  <p className="text-sm text-red-600 mt-1">
+                    {errors.invoice.taxPercent.message}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -344,6 +411,11 @@ export function InvoiceForm({
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
+            {fields.length === 0 && (
+              <p className="text-red-600 text-sm">
+                At least one line item is required
+              </p>
+            )}
             {fields.map((field, index) => (
               <div
                 key={field.id}
@@ -351,13 +423,22 @@ export function InvoiceForm({
               >
                 <div className="md:col-span-2">
                   <Label htmlFor={`invoice.lineItems.${index}.description`}>
-                    Description
+                    Description *
                   </Label>
                   <Input
                     {...register(`invoice.lineItems.${index}.description`, {
                       required: "Description is required",
+                      minLength: {
+                        value: 2,
+                        message: "Description must be at least 2 characters",
+                      },
                     })}
                     placeholder="Item description"
+                    className={
+                      errors.invoice?.lineItems?.[index]?.description
+                        ? "border-red-500"
+                        : ""
+                    }
                   />
                   {errors.invoice?.lineItems?.[index]?.description && (
                     <p className="text-sm text-red-600 mt-1">
@@ -368,17 +449,30 @@ export function InvoiceForm({
 
                 <div>
                   <Label htmlFor={`invoice.lineItems.${index}.unitPrice`}>
-                    Unit Price
+                    Unit Price *
                   </Label>
                   <Input
                     type="number"
                     step="0.01"
+                    min="0"
                     {...register(`invoice.lineItems.${index}.unitPrice`, {
                       required: "Unit price is required",
                       valueAsNumber: true,
-                      min: { value: 0, message: "Price must be positive" },
+                      min: {
+                        value: 0.01,
+                        message: "Unit price must be greater than 0",
+                      },
+                      max: {
+                        value: 999999.99,
+                        message: "Unit price cannot exceed 999,999.99",
+                      },
                     })}
                     placeholder="0.00"
+                    className={
+                      errors.invoice?.lineItems?.[index]?.unitPrice
+                        ? "border-red-500"
+                        : ""
+                    }
                   />
                   {errors.invoice?.lineItems?.[index]?.unitPrice && (
                     <p className="text-sm text-red-600 mt-1">
@@ -389,16 +483,29 @@ export function InvoiceForm({
 
                 <div>
                   <Label htmlFor={`invoice.lineItems.${index}.quantity`}>
-                    Quantity
+                    Quantity *
                   </Label>
                   <Input
                     type="number"
+                    min="1"
                     {...register(`invoice.lineItems.${index}.quantity`, {
                       required: "Quantity is required",
                       valueAsNumber: true,
-                      min: { value: 1, message: "Quantity must be at least 1" },
+                      min: {
+                        value: 1,
+                        message: "Quantity must be at least 1",
+                      },
+                      max: {
+                        value: 99999,
+                        message: "Quantity cannot exceed 99,999",
+                      },
                     })}
                     placeholder="1"
+                    className={
+                      errors.invoice?.lineItems?.[index]?.quantity
+                        ? "border-red-500"
+                        : ""
+                    }
                   />
                   {errors.invoice?.lineItems?.[index]?.quantity && (
                     <p className="text-sm text-red-600 mt-1">
@@ -413,14 +520,13 @@ export function InvoiceForm({
                       Total
                     </Label>
                     <Input
-                      type="number"
-                      step="0.01"
-                      {...register(`invoice.lineItems.${index}.total`, {
-                        valueAsNumber: true,
-                      })}
-                      placeholder="0.00"
+                      type="text"
+                      value={`${watchedValues.invoice?.currency || "USD"} ${(
+                        (Number(lineItems[index]?.unitPrice) || 0) *
+                        (Number(lineItems[index]?.quantity) || 0)
+                      ).toFixed(2)}`}
                       readOnly
-                      className="bg-muted"
+                      className="bg-muted font-mono"
                     />
                   </div>
                   <Button
@@ -429,6 +535,7 @@ export function InvoiceForm({
                     disabled={fields.length <= 1}
                     variant="outline"
                     size="sm"
+                    className="text-red-600 hover:text-red-700"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -442,32 +549,56 @@ export function InvoiceForm({
         <Card>
           <CardContent className="pt-6">
             <div className="space-y-2 max-w-sm ml-auto">
-              <div className="flex justify-between">
-                <span>Subtotal:</span>
-                <span>${watch("invoice.subtotal")?.toFixed(2) || "0.00"}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Tax ({watch("invoice.taxPercent") || 0}%):</span>
-                <span>
-                  $
-                  {(
-                    ((watch("invoice.subtotal") || 0) *
-                      (watch("invoice.taxPercent") || 0)) /
-                    100
-                  ).toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between font-bold text-lg border-t pt-2">
-                <span>Total:</span>
-                <span>${watch("invoice.total")?.toFixed(2) || "0.00"}</span>
-              </div>
+              {(() => {
+                // Calculate totals in real-time for display
+                let subtotal = 0;
+                if (Array.isArray(lineItems)) {
+                  lineItems.forEach((item) => {
+                    const unitPrice = Number(item.unitPrice) || 0;
+                    const quantity = Number(item.quantity) || 0;
+                    subtotal += unitPrice * quantity;
+                  });
+                }
+                const taxAmount = (subtotal * (Number(taxPercent) || 0)) / 100;
+                const total = subtotal + taxAmount;
+                const currency = watchedValues.invoice?.currency || "USD";
+
+                return (
+                  <>
+                    <div className="flex justify-between">
+                      <span>Subtotal:</span>
+                      <span className="font-mono">
+                        {currency} {subtotal.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>
+                        Tax ({(Number(taxPercent) || 0).toFixed(2)}%):
+                      </span>
+                      <span className="font-mono">
+                        {currency} {taxAmount.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between font-bold text-lg border-t pt-2">
+                      <span>Total:</span>
+                      <span className="font-mono">
+                        {currency} {total.toFixed(2)}
+                      </span>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           </CardContent>
         </Card>
 
         {/* Submit Button */}
         <div className="flex justify-end">
-          <Button type="submit" disabled={isLoading}>
+          <Button
+            type="submit"
+            disabled={isLoading || fields.length === 0}
+            className="min-w-[120px]"
+          >
             {isLoading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
