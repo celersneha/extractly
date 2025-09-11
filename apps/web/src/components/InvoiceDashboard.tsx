@@ -21,9 +21,9 @@ import type { Invoice, CreateInvoiceData } from "@/types/invoice.types";
 import { toast } from "sonner";
 
 export default function InvoiceDashboard() {
-  const [currentView, setCurrentView] = useState<"list" | "create" | "edit">(
-    "list"
-  );
+  const [currentView, setCurrentView] = useState<
+    "list" | "create" | "edit" | "view"
+  >("list");
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string>("");
@@ -158,22 +158,40 @@ export default function InvoiceDashboard() {
   // Handle view invoice
   const handleViewInvoice = async (invoice: Invoice) => {
     setSelectedInvoice(invoice);
-    // Note: In a real implementation, you'd need to get the PDF URL from the invoice record
-    setPdfUrl(""); // You'd set this to the actual PDF URL
-    setCurrentView("edit");
+
+    // Set the PDF URL from the invoice data
+    const fileUrl = invoice.fileUrl || invoice.pdfUrl || "";
+
+    if (!fileUrl) {
+      toast.error("No PDF file available for this invoice");
+      return;
+    }
+
+    setPdfUrl(fileUrl);
+    setCurrentView("view");
   };
 
   // Handle edit invoice
   const handleEditInvoice = async (invoice: Invoice) => {
     setSelectedInvoice(invoice);
     setExtractedData({
-      fileId: invoice.fileId,
-      fileName: invoice.fileName,
+      fileId: invoice.fileId || "",
+      fileName: invoice.fileName || "",
       vendor: invoice.vendor,
-      invoice: invoice.invoice,
+      invoice: {
+        ...invoice.invoice,
+        lineItems: invoice.invoice?.lineItems || [],
+      },
     });
-    // Note: In a real implementation, you'd need to get the PDF URL from the invoice record
-    setPdfUrl(""); // You'd set this to the actual PDF URL
+
+    // Set the PDF URL from the invoice data
+    const fileUrl = invoice.fileUrl || invoice.pdfUrl || "";
+
+    if (!fileUrl) {
+      toast.error("No PDF file available for this invoice");
+    }
+
+    setPdfUrl(fileUrl);
     setCurrentView("edit");
   };
 
@@ -230,11 +248,99 @@ export default function InvoiceDashboard() {
           />
         )}
 
+        {currentView === "view" && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Left Panel - PDF Viewer */}
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>PDF Document</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {pdfUrl ? (
+                    <PDFViewer fileUrl={pdfUrl} className="h-[600px]" />
+                  ) : (
+                    <div className="flex items-center justify-center h-[600px] bg-gray-100 rounded">
+                      <p className="text-gray-500">No PDF available</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right Panel - Invoice Details */}
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Invoice Details</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {selectedInvoice && (
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="font-semibold">Invoice Information</h3>
+                        <p>
+                          <strong>Number:</strong>{" "}
+                          {selectedInvoice.invoice?.number || "N/A"}
+                        </p>
+                        <p>
+                          <strong>Date:</strong>{" "}
+                          {selectedInvoice.invoice?.date || "N/A"}
+                        </p>
+                        <p>
+                          <strong>Total:</strong>{" "}
+                          {selectedInvoice.invoice?.total || 0}{" "}
+                          {selectedInvoice.invoice?.currency || "USD"}
+                        </p>
+                      </div>
+
+                      <div>
+                        <h3 className="font-semibold">Vendor Information</h3>
+                        <p>
+                          <strong>Name:</strong>{" "}
+                          {selectedInvoice.vendor?.name || "N/A"}
+                        </p>
+                        {selectedInvoice.vendor?.address && (
+                          <p>
+                            <strong>Address:</strong>{" "}
+                            {selectedInvoice.vendor.address}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => handleEditInvoice(selectedInvoice)}
+                        >
+                          Edit Invoice
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
+
         {(currentView === "create" || currentView === "edit") && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Left Panel - PDF Viewer */}
             <div className="space-y-6">
-              <PDFViewer fileUrl={pdfUrl} className="h-[600px]" />
+              <Card>
+                <CardHeader>
+                  <CardTitle>PDF Document</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {pdfUrl ? (
+                    <PDFViewer fileUrl={pdfUrl} className="h-[600px]" />
+                  ) : (
+                    <div className="flex items-center justify-center h-[600px] bg-gray-100 rounded">
+                      <p className="text-gray-500">No PDF uploaded</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
 
             {/* Right Panel - Invoice Form */}
@@ -244,8 +350,8 @@ export default function InvoiceDashboard() {
                   extractedData ||
                   (selectedInvoice
                     ? {
-                        fileId: selectedInvoice.fileId,
-                        fileName: selectedInvoice.fileName,
+                        fileId: selectedInvoice.fileId || "",
+                        fileName: selectedInvoice.fileName || "",
                         vendor: selectedInvoice.vendor,
                         invoice: selectedInvoice.invoice,
                       }
@@ -255,7 +361,11 @@ export default function InvoiceDashboard() {
                       })
                 }
                 onSubmit={handleSubmit}
-                onExtract={uploadedFileId ? handleExtract : undefined}
+                onExtract={
+                  uploadedFileId || selectedInvoice?.fileId
+                    ? handleExtract
+                    : undefined
+                }
                 isLoading={saving}
                 isExtracting={extracting}
               />
