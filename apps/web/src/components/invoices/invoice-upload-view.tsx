@@ -7,8 +7,15 @@ import { Label } from "@/components/ui/label";
 import { useUpload } from "@/hooks/use-upload";
 import { FileText, Upload, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import {
+  usePageBreadcrumbs,
+  BREADCRUMB_CONFIGS,
+} from "@/hooks/use-page-breadcrumbs";
 
 export function InvoiceUploadView() {
+  // Set breadcrumbs for upload page
+  usePageBreadcrumbs(BREADCRUMB_CONFIGS.upload);
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { uploading, uploadFile } = useUpload();
   const router = useRouter();
@@ -41,42 +48,45 @@ export function InvoiceUploadView() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-4">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight">
+        <h1 className="text-2xl font-bold tracking-tight">
           Upload PDF Invoice
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Upload your PDF invoice to extract data with AI
         </p>
       </div>
 
       {/* Upload Form */}
       <Card>
-        <CardHeader>
-          <CardTitle>Select PDF File</CardTitle>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm">Select PDF File</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 pt-2">
           <div>
-            <Label htmlFor="pdf-upload">PDF File (Max 25MB)</Label>
+            <Label htmlFor="pdf-upload" className="text-xs">
+              PDF File (Max 25MB)
+            </Label>
             <Input
               id="pdf-upload"
               type="file"
               accept=".pdf,application/pdf"
               onChange={handleFileSelect}
               disabled={uploading}
+              className="mt-1 text-xs h-8"
             />
           </div>
 
           {selectedFile && (
             <Card>
-              <CardContent className="pt-4">
+              <CardContent className="pt-3">
                 <div className="flex items-center gap-3">
-                  <FileText className="h-8 w-8 text-red-600" />
+                  <FileText className="h-6 w-6 text-red-600" />
                   <div>
-                    <p className="font-medium">{selectedFile.name}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="font-medium text-xs">{selectedFile.name}</p>
+                    <p className="text-xs text-muted-foreground">
                       {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                     </p>
                   </div>
@@ -89,12 +99,13 @@ export function InvoiceUploadView() {
             <Button
               onClick={handleUpload}
               disabled={!selectedFile || uploading}
-              className="min-w-[120px]"
+              className="min-w-[120px] h-8 text-xs"
+              size="sm"
             >
               {uploading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
               ) : (
-                <Upload className="mr-2 h-4 w-4" />
+                <Upload className="mr-1 h-3 w-3" />
               )}
               Upload & Process
             </Button>
