@@ -1,15 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Button } from "../ui/button";
-import { Card } from "../ui/card";
-import {
-  ZoomIn,
-  ZoomOut,
-  RotateCcw,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
 
 // PDF.js CDN URLs
 const PDFJS_URL =
@@ -88,62 +79,18 @@ export function PDFViewer({ fileUrl, className = "" }: PDFViewerProps) {
   }, [pdfDoc, currentPage, zoom]);
 
   return (
-    <Card className={`flex flex-col ${className}`}>
-      {/* PDF Toolbar */}
-      <div className="flex items-center justify-between p-4 border-b">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage <= 1}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="text-sm font-medium min-w-[80px] text-center">
-            {currentPage} / {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage >= totalPages}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))}
-          >
-            <ZoomOut className="h-4 w-4" />
-          </Button>
-          <span className="text-sm font-medium min-w-[60px] text-center">
-            {Math.round(zoom * 100)}%
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setZoom((z) => Math.min(3, z + 0.25))}
-          >
-            <ZoomIn className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => {}}>
-            <RotateCcw className="h-4 w-4" />
-          </Button>
+    <div className={`bg-white ${className}`}>
+      {/* PDF Content */}
+      <div className="h-full overflow-auto bg-gray-50 flex justify-center">
+        <div className="w-full max-w-2xl mx-auto">
+          <canvas
+            ref={canvasRef}
+            className="w-full border shadow-sm bg-white"
+            style={{ maxWidth: "100%", height: "auto", display: "block" }}
+          />
         </div>
       </div>
-
-      {/* PDF Viewer */}
-      <div className="flex-1 overflow-auto p-4 bg-gray-50">
-        <div className="flex justify-center">
-          <canvas ref={canvasRef} className="border shadow" />
-        </div>
-      </div>
-    </Card>
+    </div>
   );
 }
 
