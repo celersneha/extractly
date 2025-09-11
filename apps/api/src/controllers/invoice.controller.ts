@@ -68,7 +68,6 @@ export const extractInvoiceData = asyncHandler(async (req, res) => {
 });
 
 export const createInvoice = asyncHandler(async (req, res) => {
-  console.log("Request Body:", req.body); // Debugging line
   const invoiceData = req.body;
 
   // Validate required fields
@@ -123,11 +122,24 @@ export const getAllInvoices = asyncHandler(
 
     const totalPages = Math.ceil(total / limitNum);
 
+    // Vercel Blob base URL
+    const baseUrl =
+      "https://rwiuavssfulb8mj3.public.blob.vercel-storage.com/invoices";
+
+    // Add fileUrl to each invoice
+    const invoicesWithFileUrl = invoices.map((invoice) => ({
+      ...invoice,
+      fileUrl:
+        invoice.fileUrl ||
+        invoice.pdfUrl ||
+        (invoice.fileId ? `${baseUrl}/${invoice.fileId}` : null),
+    }));
+
     res.status(200).json(
       new ApiResponse(
         200,
         {
-          invoices,
+          invoices: invoicesWithFileUrl,
           pagination: {
             currentPage: pageNum,
             totalPages,
@@ -215,3 +227,54 @@ export const deleteInvoice = asyncHandler(
       );
   }
 );
+
+export const getInvoices = asyncHandler(async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    const invoices = await Invoice.find()
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const total = await Invoice.countDocuments();
+
+    // Vercel Blob base URL
+    const baseUrl =
+      "https://rwiuavssfulb8mj3.public.blob.vercel-storage.com/invoices";
+
+    // Make sure each invoice includes the fileUrl
+    const invoicesWithFileUrl = invoices.map((invoice) => {
+      const invoiceObj = invoice.toObject();
+      return {
+        ...invoiceObj,
+        fileUrl:
+          invoiceObj.fileUrl ||
+          invoiceObj.pdfUrl ||
+          (invoiceObj.fileId ? `${baseUrl}/${invoiceObj.fileId}` : null),
+      };
+    });
+
+    res.json({
+      success: true,
+      data: {
+        invoices: invoicesWithFileUrl,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(total / limit),
+          totalItems: total,
+          limit,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching invoices:", error);
+    res.status(500).json({
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Failed to fetch invoices",
+    });
+  }
+});
