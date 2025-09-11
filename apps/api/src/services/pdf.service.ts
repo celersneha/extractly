@@ -1,6 +1,5 @@
 import { put } from "@vercel/blob";
 import { ApiError } from "../utils/ApiError";
-import fetch from "node-fetch";
 
 export interface UploadResult {
   fileId: string;
@@ -38,7 +37,7 @@ export class PDFService {
       const blob = await put(uniqueFileName, buffer, {
         access: "public",
         contentType: mimeType,
-        token: process.env.BLOB_READ_WRITE_TOKEN, // <-- Add this line
+        token: process.env.BLOB_READ_WRITE_TOKEN,
       });
 
       return {
@@ -96,10 +95,14 @@ export const pdfService = new PDFService();
 
 export async function fetchPDFBufferFromBlob(fileUrl: string): Promise<Buffer> {
   console.log("Fetching PDF from Blob URL:", fileUrl);
+
+  // Use built-in fetch instead of node-fetch (works in Node.js 18+)
   const response = await fetch(fileUrl);
+
   if (!response.ok) {
     throw new ApiError(response.status, "Blob Not Found");
   }
+
   const arrayBuffer = await response.arrayBuffer();
   return Buffer.from(arrayBuffer);
 }
