@@ -4,16 +4,6 @@ import connectDB from "./db/index";
 
 const app = express();
 
-// Log environment variables (for debugging - remove in production)
-console.log("Environment check:", {
-  NODE_ENV: process.env.NODE_ENV,
-  hasMongoDB: !!process.env.MONGODB_URI,
-  allEnvKeys: Object.keys(process.env).filter(
-    (key) =>
-      key.includes("DB") || key.includes("MONGO") || key.includes("DATABASE")
-  ),
-});
-
 // Configure CORS properly
 app.use(
   cors({
