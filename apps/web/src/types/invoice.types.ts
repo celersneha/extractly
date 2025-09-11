@@ -20,18 +20,41 @@ export interface InvoiceData {
   total?: number;
   poNumber?: string;
   poDate?: string;
-  lineItems: LineItem[];
+  lineItems?: LineItem[]; // Make this optional to match Invoice interface
 }
 
+// Update the Invoice interface to match InvoiceData structure
 export interface Invoice {
   _id: string;
-  fileId: string;
-  fileUrl: string;
-  fileName: string;
-  vendor: Vendor;
-  invoice: InvoiceData;
+  invoice: {
+    number: string;
+    date: string;
+    total: number;
+    currency: string;
+    subtotal?: number;
+    taxPercent?: number;
+    poNumber?: string;
+    poDate?: string;
+    lineItems?: LineItem[]; // Add this property
+  };
+  vendor: {
+    name: string;
+    address?: string;
+    taxId?: string;
+  };
+  items?: Array<{
+    // Make this optional since you have lineItems in invoice
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    total: number;
+  }>;
+  fileUrl?: string;
+  pdfUrl?: string;
   createdAt: string;
   updatedAt: string;
+  fileId?: string;
+  fileName?: string;
 }
 
 export interface CreateInvoiceData {
