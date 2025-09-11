@@ -1,118 +1,34 @@
-# PDF Invoice Dashboard - Setup Complete ✅
+# Extractly - PDF Invoice Management Platform
 
-## Architecture Overview
+**AI-powered PDF invoice extraction and management system**
 
-This is a production-ready monorepo with:
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/extractly)
 
-- **Backend API** (Express + TypeScript + MongoDB + Mongoose)
-- **Frontend Web App** (Next.js 15 + TypeScript + Tailwind + shadcn/ui)
-- **AI Integration** (Gemini API for PDF extraction)
-- **File Storage** (Vercel Blob)
+## 🚀 Live Demo
 
-## Project Structure
+- **Web App**: [extractly-psi.vercel.app](https://extractly-psi.vercel.app)
+- **API**: [extractly-api.vercel.app](https://extractly-api.vercel.app)
 
-```
-apps/
-├── api/                          # Backend Express API
-│   ├── src/
-│   │   ├── controllers/          # Request handlers
-│   │   │   └── invoice.controller.ts
-│   │   ├── services/            # Business logic
-│   │   │   ├── ai.service.ts    # Gemini AI integration
-│   │   │   └── pdf.service.ts   # Vercel Blob storage
-│   │   ├── routes/              # API endpoints
-│   │   │   └── invoice.routes.ts
-│   │   ├── models/              # Mongoose models
-│   │   │   └── invoice.model.ts
-│   │   ├── types/               # TypeScript definitions
-│   │   │   └── invoice.type.ts
-│   │   ├── utils/               # Utilities (already existed)
-│   │   │   ├── ApiError.ts
-│   │   │   ├── ApiResponse.ts
-│   │   │   └── asyncHandler.ts
-│   │   ├── app.ts               # Express app setup
-│   │   └── index.ts            # Server entry point
-│   └── package.json
-└── web/                         # Frontend Next.js app
-    ├── src/
-    │   ├── app/                 # App Router
-    │   │   ├── layout.tsx
-    │   │   └── page.tsx
-    │   ├── components/          # React components
-    │   │   ├── ui/              # shadcn/ui components
-    │   │   ├── InvoiceDashboard.tsx  # Main dashboard
-    │   │   ├── InvoiceForm.tsx      # Editable form
-    │   │   ├── InvoiceList.tsx      # Data table
-    │   │   └── PDFViewer.tsx        # PDF display
-    │   ├── lib/
-    │   │   └── api.ts           # API client
-    │   └── types/
-    │       └── invoice.types.ts # TypeScript definitions
-    └── package.json
-```
+## 🏗️ Architecture
 
-## API Endpoints
+This is a production-ready monorepo featuring:
 
-### File Upload & AI Extraction
+- **Backend API** (Express.js + TypeScrip)
+- **Frontend Web App** (Next.js 15 + App Router + TypeScript + Tailwind CSS + Shadcn)
+- **AI Integration** (Gemini API for intelligent data extraction)
+- **File Storage** (Vercel Blob for PDF storage)
+- **Database** (MongoDB with Mongoose ODM)
 
-- `POST /api/v1/upload` - Upload PDF file (max 25MB)
-- `POST /api/v1/extract` - Extract invoice data with Gemini AI
+## 🚀 Quick Setup
 
-### CRUD Operations
+### Prerequisites
 
-- `GET /api/v1/invoices` - List invoices (with search & pagination)
-- `GET /api/v1/invoices/:id` - Get invoice by ID
-- `POST /api/v1/invoices` - Create new invoice
-- `PUT /api/v1/invoices/:id` - Update invoice
-- `DELETE /api/v1/invoices/:id` - Delete invoice
+- Node.js 18+ and npm
+- MongoDB database (local or cloud)
+- Gemini API key
+- Vercel Blob Token
 
-## Features Implemented
-
-### Backend ✅
-
-- PDF file upload with validation (25MB limit, PDF only)
-- Vercel Blob storage integration
-- Gemini AI for invoice data extraction
-- Full CRUD operations for invoices
-- Search by vendor name or invoice number
-- Pagination support
-- Error handling with custom ApiError class
-- Async request handlers with proper TypeScript typing
-- MongoDB integration with Mongoose
-
-### Frontend ✅
-
-- Responsive dashboard layout
-- PDF viewer component (placeholder for PDF.js integration)
-- Dynamic invoice form with real-time calculations
-- Line items management (add/remove)
-- Invoice list with search and pagination
-- File upload dialog
-- Toast notifications (Sonner)
-- Form validation with react-hook-form
-- shadcn/ui components for consistent design
-- TypeScript API client with error handling
-
-## Environment Variables
-
-### Backend (.env.local)
-
-```
-MONGODB_URI=mongodb+srv://...
-GEMINI_API_KEY=AIzaSy...
-PORT=8000
-NODE_ENV=development
-```
-
-### Frontend (.env.local)
-
-```
-NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
-```
-
-## Running the Application
-
-### Backend (Port 8000)
+### Backend Setup
 
 ```bash
 cd apps/api
@@ -120,7 +36,7 @@ npm install
 npm run dev
 ```
 
-### Frontend (Port 3000)
+### Frontend Setup
 
 ```bash
 cd apps/web
@@ -128,60 +44,401 @@ npm install
 npm run dev
 ```
 
-## Key Technologies Used
+## 🔧 Environment Variables
 
-### Backend Stack
+### Backend (`apps/api/.env.local`)
 
-- **Express.js** - Web framework
-- **TypeScript** - Type safety
-- **Mongoose** - MongoDB ODM
-- **Multer** - File upload handling
-- **Gemini AI** - Invoice data extraction
-- **Vercel Blob** - File storage
-- **tsx** - TypeScript execution
-- **nodemon** - Development auto-reload
+```env
+# Database
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/extractly
 
-### Frontend Stack
+# AI Service (choose one)
+GEMINI_API_KEY=AIzaSy...                    # Google Gemini API
+GROQ_API_KEY=gsk_...                        # Groq API
 
-- **Next.js 15** - React framework with App Router
-- **TypeScript** - Type safety
-- **Tailwind CSS** - Styling
-- **shadcn/ui** - UI component library
-- **React Hook Form** - Form management
-- **Sonner** - Toast notifications
-- **Lucide React** - Icons
+# Server
+PORT=8000
+NODE_ENV=development
 
-## Production Readiness Features
+# Vercel Blob (for file storage)
+BLOB_READ_WRITE_TOKEN=vercel_blob_rw_...
+```
 
-1. **Error Handling** - Custom ApiError class with proper HTTP status codes
-2. **Input Validation** - File type, size validation, form validation
-3. **Type Safety** - Full TypeScript coverage on both frontend and backend
-4. **Async Safety** - AsyncHandler wrapper for all route handlers
-5. **Structured Responses** - Consistent API response format
-6. **Search & Pagination** - Scalable data fetching
-7. **File Upload Security** - Size limits, MIME type validation
-8. **Environment Configuration** - Separate dev/prod configs
-9. **Modular Architecture** - Clean separation of concerns
-10. **Database Modeling** - Proper Mongoose schemas with validation
+### Frontend (`apps/web/.env.local`)
 
-## TODO: Additional Enhancements
+```env
+# API URL
+NEXT_PUBLIC_API_URL=http://localhost:8000
 
-1. **PDF.js Integration** - Complete PDF viewer implementation
-2. **File Retrieval** - Implement PDF fetching from Vercel Blob for AI extraction
-3. **Authentication** - Add user authentication and authorization
-4. **Rate Limiting** - API rate limiting for production
-5. **Caching** - Redis caching for improved performance
-6. **Testing** - Unit and integration tests
-7. **Deployment** - Docker containerization and CI/CD
-8. **Monitoring** - Error tracking and performance monitoring
+# For production
+# NEXT_PUBLIC_API_URL=https://extractly-api.vercel.app
+```
 
-## Testing the Application
+## 🏃‍♂️ Running Locally
 
-1. Visit `http://localhost:3000`
-2. Click "New Invoice" to upload a PDF
-3. Use the "Extract with AI" button (requires Gemini API implementation)
-4. Fill out the invoice form manually or with extracted data
-5. Save the invoice
-6. View the invoice list with search functionality
+1. **Clone and install dependencies:**
 
-The application is now ready for development and testing! 🚀
+   ```bash
+   git clone <your-repo-url>
+   cd pdf-dashboard
+   ```
+
+2. **Setup Backend:**
+
+   ```bash
+   cd apps/api
+   npm install
+   # Add .env.local with required variables
+   npm run dev  # Starts on http://localhost:8000
+   ```
+
+3. **Setup Frontend:**
+
+   ```bash
+   cd apps/web
+   npm install
+   # Add .env.local with API URL
+   npm run dev  # Starts on http://localhost:3000
+   ```
+
+4. **Visit the application:**
+   - Frontend: http://localhost:3000
+   - API: http://localhost:8000
+
+## 🌐 Deployed URLs
+
+- **Frontend**: https://extractly-psi.vercel.app
+- **Backend API**: https://extractly-api.vercel.app
+
+## ## 📋 API Documentation
+
+### Base URL
+
+- **Local**: `http://localhost:8000/api/v1`
+- **Production**: `https://extractly-api.vercel.app/api/v1`
+
+### Authentication
+
+Currently, no authentication is required. All endpoints are publicly accessible.
+
+### File Upload & AI Extraction
+
+#### Upload PDF File
+
+```http
+POST /upload
+Content-Type: multipart/form-data
+
+Body: file (PDF, max 25MB)
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "fileId": "1757556510633_Invoice.pdf",
+    "fileName": "Invoice.pdf",
+    "fileUrl": "https://rwiuavssfulb8mj3.public.blob.vercel-storage.com/invoices/1757556510633_Invoice.pdf",
+    "fileSize": 245760
+  },
+  "message": "PDF uploaded successfully"
+}
+```
+
+#### Extract Invoice Data with AI
+
+```http
+POST /extract
+Content-Type: application/json
+
+{
+  "fileId": "1757556510633_Invoice_by_Shubh_Verma.pdf",
+  "fileName": "Invoice by Shubh Verma.pdf",
+  "model": "gemini"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "vendor": {
+      "name": "GOOD COMPANY",
+      "address": "123 Somewhere St., Any City",
+      "taxId": ""
+    },
+    "invoice": {
+      "number": "GC12750197",
+      "date": "2024-04-15",
+      "currency": "INR",
+      "subtotal": 700,
+      "taxPercent": 0,
+      "total": 700,
+      "poNumber": "",
+      "poDate": "",
+      "lineItems": [
+        {
+          "description": "Masterclass",
+          "unitPrice": 100,
+          "quantity": 1,
+          "total": 100
+        },
+        {
+          "description": "Logo Design",
+          "unitPrice": 100,
+          "quantity": 1,
+          "total": 100
+        }
+      ]
+    }
+  }
+}
+```
+
+### Invoice CRUD Operations
+
+#### Get All Invoices
+
+```http
+GET /invoices?page=1&limit=10&q=search_term
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "invoices": [
+      {
+        "_id": "68c22f3590c05ee03375e8ff",
+        "fileId": "1757556510633_Invoice_by_Shubh_Verma.pdf",
+        "fileName": "Invoice by Shubh Verma.pdf",
+        "vendor": {
+          "name": "GOOD COMPANY",
+          "address": "123 Somewhere St., Any City"
+        },
+        "invoice": {
+          "number": "GC12750197",
+          "date": "2024-04-15",
+          "currency": "INR",
+          "total": 700,
+          "lineItems": [...]
+        },
+        "createdAt": "2025-01-11T02:08:53.812Z",
+        "updatedAt": "2025-01-11T02:08:53.812Z"
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "totalPages": 5,
+      "totalItems": 42,
+      "hasNext": true,
+      "hasPrev": false
+    }
+  }
+}
+```
+
+#### Get Single Invoice
+
+```http
+GET /invoices/{id}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "68c22f3590c05ee03375e8ff",
+    "fileId": "1757556510633_Invoice_by_Shubh_Verma.pdf",
+    "fileName": "Invoice by Shubh Verma.pdf",
+    "vendor": {
+      "name": "GOOD COMPANY",
+      "address": "123 Somewhere St., Any City",
+      "taxId": ""
+    },
+    "invoice": {
+      "number": "GC12750197",
+      "date": "2024-04-15",
+      "currency": "INR",
+      "subtotal": 700,
+      "taxPercent": 0,
+      "total": 700,
+      "lineItems": [
+        {
+          "description": "Masterclass",
+          "unitPrice": 100,
+          "quantity": 1,
+          "total": 100
+        }
+      ]
+    },
+    "createdAt": "2025-01-11T02:08:53.812Z",
+    "updatedAt": "2025-01-11T02:08:53.812Z"
+  }
+}
+```
+
+#### Create New Invoice
+
+```http
+POST /invoices
+Content-Type: application/json
+
+{
+  "fileId": "1757556510633_Invoice_by_Shubh_Verma.pdf",
+  "fileName": "Invoice by Shubh Verma.pdf",
+  "vendor": {
+    "name": "GOOD COMPANY",
+    "address": "123 Somewhere St., Any City",
+    "taxId": ""
+  },
+  "invoice": {
+    "number": "GC12750197",
+    "date": "2024-04-15",
+    "currency": "INR",
+    "subtotal": 700,
+    "taxPercent": 0,
+    "total": 700,
+    "poNumber": "",
+    "poDate": "",
+    "lineItems": [
+      {
+        "description": "Masterclass",
+        "unitPrice": 100,
+        "quantity": 1,
+        "total": 100
+      }
+    ]
+  }
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": {
+    "_id": "68c22f3590c05ee03375e8ff",
+    "fileId": "1757556510633_Invoice_by_Shubh_Verma.pdf",
+    "fileName": "Invoice by Shubh Verma.pdf",
+    "vendor": {
+      /* vendor data */
+    },
+    "invoice": {
+      /* invoice data */
+    },
+    "createdAt": "2025-01-11T02:08:53.812Z",
+    "updatedAt": "2025-01-11T02:08:53.812Z"
+  },
+  "message": "Invoice created successfully"
+}
+```
+
+#### Update Invoice
+
+```http
+PUT /invoices/{id}
+Content-Type: application/json
+
+{
+  "vendor": {
+    "name": "Updated Company Name",
+    "address": "New Address"
+  },
+  "invoice": {
+    "number": "UPDATED123",
+    "date": "2024-04-16",
+    "currency": "USD",
+    "total": 850
+  }
+}
+```
+
+#### Delete Invoice
+
+```http
+DELETE /invoices/{id}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "message": "Invoice deleted successfully"
+}
+```
+
+### Error Responses
+
+All API endpoints return consistent error responses:
+
+```json
+{
+  "success": false,
+  "status": 400,
+  "message": "Validation error message"
+}
+```
+
+**Common Status Codes:**
+
+- `400` - Bad Request (validation errors)
+- `404` - Not Found (resource doesn't exist)
+- `500` - Internal Server Error
+- `413` - Payload Too Large (file size exceeded)
+
+### 🛠️ Tech Stack
+
+#### Backend
+
+- **Express.js**
+- **TypeScript**
+- **MongoDB + Mongoose**
+- **Vercel Blob**
+- **Gemini**
+- **CORS**
+
+#### Frontend
+
+- **Next.js 15**
+- **TypeScript**
+- **Tailwind CSS**
+- **shadcn/ui**
+- **React Hook Form**
+- **Sonner**
+- **Lucide React**
+- **PDF.js**
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+Before you begin, ensure you have:
+
+- **Node.js 18+** installed
+- **npm** package manager
+- **MongoDB** database (local or cloud like MongoDB Atlas)
+- **AI API Key** (Gemini or Groq)
+- **Vercel Account** (for Blob storage token)
+
+## 🌐 Deployment
+
+## 📱 Usage
+
+### Upload & Extract Workflow
+
+1. **Upload PDF**: Click "Upload PDF" and select your invoice file
+2. **AI Extraction**: Use "Extract with AI" to automatically extract invoice data
+3. **Review & Edit**: Review and edit the extracted information
+4. **Save Invoice**: Save the invoice to your database
+5. **View & Manage**: View all invoices with search and filtering capabilities
