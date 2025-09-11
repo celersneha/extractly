@@ -1,5 +1,5 @@
-import InvoiceDashboard from "@/components/InvoiceDashboard";
+import { redirect } from "next/navigation";
 
-export default function Home() {
-  return <InvoiceDashboard />;
+export default function HomePage() {
+  redirect("/dashboard");
 }
